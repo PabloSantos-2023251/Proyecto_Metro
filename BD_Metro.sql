@@ -1,3 +1,8 @@
+-- corregido: drop database if exists proyecto_metro;
+drop database if exists proyecto_metro;
+create database proyecto_metro;
+use proyecto_metro;
+
 -- 1. creacion de tablas
 create table personal (
     id_personal int primary key,
@@ -9,6 +14,20 @@ create table impacto_trafico (
     id_impacto int primary key,
     zona varchar(100),
     reduccion_trafico_porcentaje decimal(5,2)
+);
+
+create table horarios (
+    id_horario int primary key,
+    hora_salida time,
+    hora_llegada time,
+    id_tren int
+);
+
+create table mantenimiento (
+    id_mantenimiento int primary key,
+    fecha date,
+    descripcion text,
+    id_tren int
 );
 
 -- 2. procedimientos crud para personal con delimiter
@@ -55,6 +74,50 @@ end //
 create procedure sp_eliminar_impacto(in _id int)
 begin
     delete from impacto_trafico where id_impacto = _id;
+end //
+
+-- 4. procedimientos crud para horarios
+
+create procedure sp_crear_horario(in _id int, in _salida time, in _llegada time, in _tren int)
+begin
+    insert into horarios (id_horario, hora_salida, hora_llegada, id_tren) values (_id, _salida, _llegada, _tren);
+end //
+
+create procedure sp_leer_horario(in _id int)
+begin
+    select * from horarios where id_horario = _id;
+end //
+
+create procedure sp_actualizar_horario(in _id int, in _salida time, in _llegada time, in _tren int)
+begin
+    update horarios set hora_salida = _salida, hora_llegada = _llegada, id_tren = _tren where id_horario = _id;
+end //
+
+create procedure sp_eliminar_horario(in _id int)
+begin
+    delete from horarios where id_horario = _id;
+end //
+
+-- 5. procedimientos crud para mantenimiento
+
+create procedure sp_crear_mantenimiento(in _id int, in _fec date, in _desc text, in _tren int)
+begin
+    insert into mantenimiento (id_mantenimiento, fecha, descripcion, id_tren) values (_id, _fec, _desc, _tren);
+end //
+
+create procedure sp_leer_mantenimiento(in _id int)
+begin
+    select * from mantenimiento where id_mantenimiento = _id;
+end //
+
+create procedure sp_actualizar_mantenimiento(in _id int, in _fec date, in _desc text, in _tren int)
+begin
+    update mantenimiento set fecha = _fec, descripcion = _desc, id_tren = _tren where id_mantenimiento = _id;
+end //
+
+create procedure sp_eliminar_mantenimiento(in _id int)
+begin
+    delete from mantenimiento where id_mantenimiento = _id;
 end //
 
 delimiter ;
