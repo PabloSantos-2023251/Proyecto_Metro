@@ -136,3 +136,67 @@ begin
 end //
 
 delimiter ;
+
+-- Lineas
+-- create
+DELIMITER //
+
+create procedure sp_crear_linea(in _id int,in _nombre varchar(50),in _color varchar(30),in _longitud decimal(5,2)
+)
+begin
+    insert into Lineas (id_linea, nombre_linea, color, longitud_km) values (_id, _nombre, _color, _longitud);
+end //
+
+-- Leer
+create procedure sp_leer_linea(in _id int)
+begin
+    select * from Lineas where id_linea = _id;
+end //
+
+-- Actualizar
+create procedure sp_actualizar_linea(in _id int,in _nombre varchar(50),in _color varchar(30),in _longitud decimal(5,2)
+)
+begin
+    update Lineas
+    set nombre_linea = _nombre,
+        color = _color,
+        longitud_km = _longitud
+    where id_linea = _id;
+end //
+
+-- Eliminar
+create procedure sp_eliminar_linea(in _id int)
+begin
+    delete from Lineas where id_linea = _id;
+end //
+
+-- Estaciones 
+-- create 
+create procedure sp_crear_estacion(in _id int,in _nombre varchar(50),in _zona varchar(30),in _id_linea int
+)
+begin
+    insert into Estaciones (id_estacion, nombre, zona, id_linea) values (_id, _nombre, _zona, _id_linea);
+end //
+
+-- Leer
+create procedure sp_leer_estacion(in _id int)
+begin
+    select * from Estaciones where id_estacion = _id;
+end //
+
+-- Actualizar
+create procedure sp_actualizar_estacion(in _id int,in _nombre varchar(50),in _zona varchar(30),in _id_linea int
+)
+begin
+    update Estaciones
+    set nombre = _nombre,
+        zona = _zona,
+        id_linea = _id_linea
+    where id_estacion = _id;
+end //
+
+-- Eliminar
+create procedure sp_eliminar_estacion(in _id int)
+begin
+    delete from Estaciones where id_estacion = _id;
+end //
