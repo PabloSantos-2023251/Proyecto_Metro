@@ -30,6 +30,21 @@ create table mantenimiento (
     id_tren int
 );
 
+create table Lineas (
+    id_linea int primary key auto_increment,
+    nombre_linea varchar(50) not null,
+    color varchar(30),
+    longitud_km decimal(5,2)
+);
+
+create table Estaciones (
+    id_estacion int primary key auto_increment,
+    nombre varchar(50) not null,
+    zona varchar(30),
+    id_linea int,
+    foreign key (id_linea) references Lineas(id_linea)
+);
+
 -- 2. procedimientos crud para personal con delimiter
 
 delimiter //
