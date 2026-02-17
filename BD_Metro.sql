@@ -32,6 +32,20 @@ create table mantenimiento (
     FOREIGN KEY (id_tren) REFERENCES trenes(id_tren)
 );
 
+Create Table Pasajeros(
+	id_pasajero Int Primary Key Auto_increment not null,
+    nombre_pasajero Varchar(50) not null,
+    tipo_pasajero Varchar(30) not null
+);
+
+Create Table Boletos(
+	id_boleto Int Primary Key Auto_increment not null,
+    precio Decimal(10,2) not null,
+    fecha Date not null,
+    id_pasajero int,
+    Foreign Key (id_pasajero) References Pasajeros(id_pasajeros)
+);
+
 create table Lineas (
     id_linea int primary key auto_increment,
     nombre_linea varchar(50) not null,
@@ -152,6 +166,80 @@ begin
 end //
 
 delimiter ;
+
+-- Procedimientos para Pasajeros y Boletos
+
+DELIMITER //
+
+create procedure sp_crear_pasajero(
+    in _id int,
+    in _nombre varchar(100),
+    in _tipo_usuario varchar(50)
+)
+begin
+    insert into pasajeros(id_pasajero, nombre, tipo_usuario)
+    values(_id, _nombre, _tipo_usuario);
+end //
+
+create procedure sp_leer_pasajero(in _id int)
+begin
+    select * from pasajeros where id_pasajero = _id;
+end //
+
+create procedure sp_actualizar_pasajero(
+    in _id int,
+    in _nombre varchar(100),
+    in _tipo_usuario varchar(50)
+)
+begin
+    update pasajeros
+    set nombre = _nombre,
+        tipo_usuario = _tipo_usuario
+    where id_pasajero = _id;
+end //
+
+create procedure sp_eliminar_pasajero(in _id int)
+begin
+    delete from pasajeros where id_pasajero = _id;
+end //
+
+create procedure sp_crear_boleto(
+    in _id int,
+    in _precio decimal(10,2),
+    in _fecha date,
+    in _id_pasajero int
+)
+begin
+    insert into boletos(id_boleto, precio, fecha, id_pasajero)
+    values(_id, _precio, _fecha, _id_pasajero);
+end //
+
+create procedure sp_leer_boleto(in _id int)
+begin
+    select * from boletos where id_boleto = _id;
+end //
+
+create procedure sp_actualizar_boleto(
+    in _id int,
+    in _precio decimal(10,2),
+    in _fecha date,
+    in _id_pasajero int
+)
+begin
+    update boletos
+    set precio = _precio,
+        fecha = _fecha,
+        id_pasajero = _id_pasajero
+    where id_boleto = _id;
+end //
+
+create procedure sp_eliminar_boleto(in _id int)
+begin
+    delete from boletos where id_boleto = _id;
+end //
+
+DELIMITER ;
+
 
 -- Lineas
 -- create
