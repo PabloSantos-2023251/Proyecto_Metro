@@ -1,9 +1,35 @@
--- corregido: drop database if exists proyecto_metro;
-drop database if exists proyecto_metro;
-create database proyecto_metro;
-use proyecto_metro;
+drop database if exists proyecto_metro_in5cm;
+create database proyecto_metro_in5cm;
+use proyecto_metro_in5cm;
 
--- 1. creacion de tablas
+-- TABLAS INDEPENDIENTES (Nivel 1)
+create table Lineas (
+    id_linea int primary key auto_increment,
+    nombre_linea varchar(50) not null,
+    color varchar(30),
+    longitud_km decimal(5,2)
+);
+
+create table trenes (
+    id_tren int auto_increment primary key,
+    modelo varchar(50) not null,
+    capacidad_pasajeros int not null,
+    estado varchar(30) not null
+);
+
+create table Pasajeros(
+    id_pasajero Int Primary Key Auto_increment not null,
+    nombre_pasajero Varchar(50) not null,
+    tipo_pasajero Varchar(30) not null
+);
+
+create table conductores (
+    id_conductor int auto_increment primary key,
+    nombre varchar(100) not null,
+    licencia varchar(50) not null,
+    anios_experiencia int not null
+);
+
 create table personal (
     id_personal int primary key,
     nombre varchar(100),
@@ -14,6 +40,15 @@ create table impacto_trafico (
     id_impacto int primary key,
     zona varchar(100),
     reduccion_trafico_porcentaje decimal(5,2)
+);
+
+-- TABLAS DEPENDIENTES (Nivel 2)
+create table Estaciones (
+    id_estacion int primary key auto_increment,
+    nombre varchar(50) not null,
+    zona varchar(30),
+    id_linea int,
+    foreign key (id_linea) references Lineas(id_linea)
 );
 
 create table horarios (
@@ -32,53 +67,17 @@ create table mantenimiento (
     FOREIGN KEY (id_tren) REFERENCES trenes(id_tren)
 );
 
-Create Table Pasajeros(
-	id_pasajero Int Primary Key Auto_increment not null,
-    nombre_pasajero Varchar(50) not null,
-    tipo_pasajero Varchar(30) not null
-);
-
-Create Table Boletos(
-	id_boleto Int Primary Key Auto_increment not null,
+create table Boletos(
+    id_boleto Int Primary Key Auto_increment not null,
     precio Decimal(10,2) not null,
     fecha Date not null,
     id_pasajero int,
-    Foreign Key (id_pasajero) References Pasajeros(id_pasajeros)
+    Foreign Key (id_pasajero) References Pasajeros(id_pasajero)
 );
 
-create table Lineas (
-    id_linea int primary key auto_increment,
-    nombre_linea varchar(50) not null,
-    color varchar(30),
-    longitud_km decimal(5,2)
-);
+DELIMITER //
 
-create table Estaciones (
-    id_estacion int primary key auto_increment,
-    nombre varchar(50) not null,
-    zona varchar(30),
-    id_linea int,
-    foreign key (id_linea) references Lineas(id_linea)
-);
-create table trenes (
-    id_tren int auto_increment primary key,
-    modelo varchar(50) not null,
-    capacidad_pasajeros int not null,
-    estado varchar(30) not null
-);
-
-
-create table conductores (
-    id_conductor int auto_increment primary key,
-    nombre varchar(100) not null,
-    licencia varchar(50) not null,
-    anios_experiencia int not null
-);
-
--- 2. procedimientos crud para personal con delimiter
-
-delimiter //
-
+-- CRUD: PERSONAL
 create procedure sp_crear_personal(in _id int, in _nom varchar(100), in _car varchar(50))
 begin
     insert into personal (id_personal, nombre, cargo) values (_id, _nom, _car);
@@ -99,8 +98,7 @@ begin
     delete from personal where id_personal = _id;
 end //
 
--- 3. procedimientos crud para impacto_trafico
-
+-- CRUD: IMPACTO TRAFICO
 create procedure sp_crear_impacto(in _id int, in _zona varchar(100), in _red decimal(5,2))
 begin
     insert into impacto_trafico (id_impacto, zona, reduccion_trafico_porcentaje) values (_id, _zona, _red);
@@ -111,214 +109,26 @@ begin
     select * from impacto_trafico where id_impacto = _id;
 end //
 
-create procedure sp_actualizar_impacto(in _id int, in _zona varchar(100), in _red decimal(5,2))
+-- CRUD: PASAJEROS (Corregido nombres de columnas)
+create procedure sp_crear_pasajero(in _id int, in _nombre varchar(100), in _tipo varchar(50))
 begin
-    update impacto_trafico set zona = _zona, reduccion_trafico_porcentaje = _red where id_impacto = _id;
-end //
-
-create procedure sp_eliminar_impacto(in _id int)
-begin
-    delete from impacto_trafico where id_impacto = _id;
-end //
-
--- 4. procedimientos crud para horarios
-
-create procedure sp_crear_horario(in _id int, in _salida time, in _llegada time, in _tren int)
-begin
-    insert into horarios (id_horario, hora_salida, hora_llegada, id_tren) values (_id, _salida, _llegada, _tren);
-end //
-
-create procedure sp_leer_horario(in _id int)
-begin
-    select * from horarios where id_horario = _id;
-end //
-
-create procedure sp_actualizar_horario(in _id int, in _salida time, in _llegada time, in _tren int)
-begin
-    update horarios set hora_salida = _salida, hora_llegada = _llegada, id_tren = _tren where id_horario = _id;
-end //
-
-create procedure sp_eliminar_horario(in _id int)
-begin
-    delete from horarios where id_horario = _id;
-end //
-
--- 5. procedimientos crud para mantenimiento
-
-create procedure sp_crear_mantenimiento(in _id int, in _fec date, in _desc text, in _tren int)
-begin
-    insert into mantenimiento (id_mantenimiento, fecha, descripcion, id_tren) values (_id, _fec, _desc, _tren);
-end //
-
-create procedure sp_leer_mantenimiento(in _id int)
-begin
-    select * from mantenimiento where id_mantenimiento = _id;
-end //
-
-create procedure sp_actualizar_mantenimiento(in _id int, in _fec date, in _desc text, in _tren int)
-begin
-    update mantenimiento set fecha = _fec, descripcion = _desc, id_tren = _tren where id_mantenimiento = _id;
-end //
-
-create procedure sp_eliminar_mantenimiento(in _id int)
-begin
-    delete from mantenimiento where id_mantenimiento = _id;
-end //
-
-delimiter ;
-
--- Procedimientos para Pasajeros y Boletos
-
-DELIMITER //
-
-create procedure sp_crear_pasajero(
-    in _id int,
-    in _nombre varchar(100),
-    in _tipo_usuario varchar(50)
-)
-begin
-    insert into pasajeros(id_pasajero, nombre, tipo_usuario)
-    values(_id, _nombre, _tipo_usuario);
+    insert into Pasajeros(id_pasajero, nombre_pasajero, tipo_pasajero) values(_id, _nombre, _tipo);
 end //
 
 create procedure sp_leer_pasajero(in _id int)
 begin
-    select * from pasajeros where id_pasajero = _id;
+    select * from Pasajeros where id_pasajero = _id;
 end //
 
-create procedure sp_actualizar_pasajero(
-    in _id int,
-    in _nombre varchar(100),
-    in _tipo_usuario varchar(50)
-)
+create procedure sp_actualizar_pasajero(in _id int, in _nombre varchar(100), in _tipo varchar(50))
 begin
-    update pasajeros
-    set nombre = _nombre,
-        tipo_usuario = _tipo_usuario
-    where id_pasajero = _id;
+    update Pasajeros set nombre_pasajero = _nombre, tipo_pasajero = _tipo where id_pasajero = _id;
 end //
 
-create procedure sp_eliminar_pasajero(in _id int)
+-- CRUD: TRENES
+create procedure sp_crear_tren(in _id int, in _modelo varchar(50), in _capacidad int, in _estado varchar(30))
 begin
-    delete from pasajeros where id_pasajero = _id;
-end //
-
-create procedure sp_crear_boleto(
-    in _id int,
-    in _precio decimal(10,2),
-    in _fecha date,
-    in _id_pasajero int
-)
-begin
-    insert into boletos(id_boleto, precio, fecha, id_pasajero)
-    values(_id, _precio, _fecha, _id_pasajero);
-end //
-
-create procedure sp_leer_boleto(in _id int)
-begin
-    select * from boletos where id_boleto = _id;
-end //
-
-create procedure sp_actualizar_boleto(
-    in _id int,
-    in _precio decimal(10,2),
-    in _fecha date,
-    in _id_pasajero int
-)
-begin
-    update boletos
-    set precio = _precio,
-        fecha = _fecha,
-        id_pasajero = _id_pasajero
-    where id_boleto = _id;
-end //
-
-create procedure sp_eliminar_boleto(in _id int)
-begin
-    delete from boletos where id_boleto = _id;
-end //
-
-DELIMITER ;
-
-
--- Lineas
--- create
-DELIMITER //
-
-create procedure sp_crear_linea(in _id int,in _nombre varchar(50),in _color varchar(30),in _longitud decimal(5,2)
-)
-begin
-    insert into Lineas (id_linea, nombre_linea, color, longitud_km) values (_id, _nombre, _color, _longitud);
-end //
-
--- Leer
-create procedure sp_leer_linea(in _id int)
-begin
-    select * from Lineas where id_linea = _id;
-end //
-
--- Actualizar
-create procedure sp_actualizar_linea(in _id int,in _nombre varchar(50),in _color varchar(30),in _longitud decimal(5,2)
-)
-begin
-    update Lineas
-    set nombre_linea = _nombre,
-        color = _color,
-        longitud_km = _longitud
-    where id_linea = _id;
-end //
-
--- Eliminar
-create procedure sp_eliminar_linea(in _id int)
-begin
-    delete from Lineas where id_linea = _id;
-end //
-
--- Estaciones 
--- create 
-create procedure sp_crear_estacion(in _id int,in _nombre varchar(50),in _zona varchar(30),in _id_linea int
-)
-begin
-    insert into Estaciones (id_estacion, nombre, zona, id_linea) values (_id, _nombre, _zona, _id_linea);
-end //
-
--- Leer
-create procedure sp_leer_estacion(in _id int)
-begin
-    select * from Estaciones where id_estacion = _id;
-end //
-
--- Actualizar
-create procedure sp_actualizar_estacion(in _id int,in _nombre varchar(50),in _zona varchar(30),in _id_linea int
-)
-begin
-    update Estaciones
-    set nombre = _nombre,
-        zona = _zona,
-        id_linea = _id_linea
-    where id_estacion = _id;
-end //
-
--- Eliminar
-create procedure sp_eliminar_estacion(in _id int)
-begin
-    delete from Estaciones where id_estacion = _id;
-end //
-
-
--- agregue procedimientos de trenes y conductores
-
-delimiter //
-
-create procedure sp_crear_tren(
-    in _id int,
-    in _modelo varchar(50),
-    in _capacidad int,
-    in _estado varchar(30)
-)
-begin
-    insert into trenes(id_tren, modelo, capacidad_pasajeros, estado)
-    values(_id, _modelo, _capacidad, _estado);
+    insert into trenes(id_tren, modelo, capacidad_pasajeros, estado) values(_id, _modelo, _capacidad, _estado);
 end //
 
 create procedure sp_leer_tren(in _id int)
@@ -326,39 +136,21 @@ begin
     select * from trenes where id_tren = _id;
 end //
 
-create procedure sp_actualizar_tren(
-    in _id int,
-    in _modelo varchar(50),
-    in _capacidad int,
-    in _estado varchar(30)
-)
+-- CRUD: LINEAS
+create procedure sp_crear_linea(in _id int, in _nombre varchar(50), in _color varchar(30), in _longitud decimal(5,2))
 begin
-    update trenes
-    set modelo = _modelo,
-        capacidad_pasajeros = _capacidad,
-        estado = _estado
-    where id_tren = _id;
+    insert into Lineas (id_linea, nombre_linea, color, longitud_km) values (_id, _nombre, _color, _longitud);
 end //
 
-create procedure sp_eliminar_tren(in _id int)
+create procedure sp_leer_linea(in _id int)
 begin
-    delete from trenes where id_tren = _id;
+    select * from Lineas where id_linea = _id;
 end //
 
-delimiter ;
-
-
-delimiter //
-
-create procedure sp_crear_conductor(
-    in _id int,
-    in _nombre varchar(100),
-    in _licencia varchar(50),
-    in _exp int
-)
+-- CRUD: CONDUCTORES (Corregido nombre de columna anios_experiencia)
+create procedure sp_crear_conductor(in _id int, in _nombre varchar(100), in _licencia varchar(50), in _exp int)
 begin
-    insert into conductores(id_conductor, nombre, licencia, anos_experiencia)
-    values(_id, _nombre, _licencia, _exp);
+    insert into conductores(id_conductor, nombre, licencia, anios_experiencia) values(_id, _nombre, _licencia, _exp);
 end //
 
 create procedure sp_leer_conductor(in _id int)
@@ -366,23 +158,9 @@ begin
     select * from conductores where id_conductor = _id;
 end //
 
-create procedure sp_actualizar_conductor(
-    in _id int,
-    in _nombre varchar(100),
-    in _licencia varchar(50),
-    in _exp int
-)
+create procedure sp_actualizar_conductor(in _id int, in _nombre varchar(100), in _licencia varchar(50), in _exp int)
 begin
-    update conductores
-    set nombre = _nombre,
-        licencia = _licencia,
-        anios_experiencia = _exp
-    where id_conductor = _id;
+    update conductores set nombre = _nombre, licencia = _licencia, anios_experiencia = _exp where id_conductor = _id;
 end //
 
-create procedure sp_eliminar_conductor(in _id int)
-begin
-    delete from conductores where id_conductor = _id;
-end //
-
-delimiter ;
+DELIMITER ;
