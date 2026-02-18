@@ -125,6 +125,39 @@ begin
     update Pasajeros set nombre_pasajero = _nombre, tipo_pasajero = _tipo where id_pasajero = _id;
 end //
 
+create procedure eliminar_pasajero(in p_id_pasajero int)
+begin
+    delete from pasajeros where id_pasajero = p_id_pasajero;
+end //
+
+-- CRUD BOLETOS
+create procedure crear_boleto(in p_precio decimal(10,2), in p_fecha date, in p_id_pasajero int)
+begin
+	insert into boletos(precio, fecha, id_pasajero) values(p_precio, p_fecha, p_id_pasajero);
+end //
+
+create procedure leer_boletos()
+begin
+    select b.id_boleto, b.precio, b.fecha, p.nombre_pasajero, p.tipo_pasajero
+    from boletos b
+    inner join pasajeros p
+    on b.id_pasajero = p.id_pasajero;
+end //
+
+create procedure actualizar_boleto( in p_id_boleto int,in p_precio decimal(10,2), in p_fecha date, in p_id_pasajero int
+)
+begin
+    update boletos
+    set precio = p_precio, fecha = p_fecha,id_pasajero = p_id_pasajero
+    where id_boleto = p_id_boleto;
+end //
+
+create procedure eliminar_boleto(in p_id_boleto int)
+begin
+    delete from boletos
+    where id_boleto = p_id_boleto;
+end //
+
 -- CRUD: TRENES
 create procedure sp_crear_tren(in _id int, in _modelo varchar(50), in _capacidad int, in _estado varchar(30))
 begin
